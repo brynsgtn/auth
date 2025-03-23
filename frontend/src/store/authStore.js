@@ -1,7 +1,7 @@
 import {create} from "zustand";
 import axios from "axios";
 
-const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api/auth" : "/api/auth";
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:3000/api/auth" : "/api/auth";
 
 axios.defaults.withCredentials = true;
 
@@ -94,4 +94,18 @@ export const useAuthStore = create((set) => ({
 			throw error;
 		}
 	},
+	resendVerificationEmail: async (email) => {
+		set({ isLoading: true, error: null });
+		try {
+		  const response = await axios.post(`${API_URL}/resend-verification-email`, { email });
+		  set({ message: response.data.message, isLoading: false });
+		} catch (error) {
+		  set({
+			error: error.response?.data?.message || 'Error resending verification email',
+			isLoading: false,
+		  });
+		  throw error;
+		}
+	  },
+	  clearError: () => set({ error: null }),
 }));

@@ -1,20 +1,38 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import { useAuthStore } from "../store/authStore";
 
 const LoginPage = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [showResend, setShowResend] = useState(false);
 
-	const { login, isLoading, error } = useAuthStore();
+	const navigate = useNavigate();
+
+	const { login, isLoading, error, resendVerificationEmail, clearError } = useAuthStore();
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
-		await login(email, password);
+		try {
+			await login(email, password);
+		  } catch (err) {
+			if (err.response?.data?.message === 'User not verified') {
+			  setShowResend(true);
+			}
+		  }
 	};
+
+	const handleResendVerification = async () => {
+		try {
+		  await resendVerificationEmail(email);
+		  navigate("/verify-email");
+		} catch (err) {
+		  // Handle error if needed
+		}
+	  };
 
 	return (
 		<motion.div
@@ -50,8 +68,8 @@ const LoginPage = () => {
 							Forgot password?
 						</Link>
 					</div>
-			 <p className='text-red-500 font-semibold mb-2'></p>
-			 {error && <p className='text-red-500 font-semibold mb-2'>{error}</p>}
+					<p className='text-red-500 font-semibold mb-2'></p>
+					{error && <p className='text-red-500 font-semibold mb-2'>{error}</p>}
 
 					<motion.button
 						whileHover={{ scale: 1.02 }}
@@ -63,11 +81,25 @@ const LoginPage = () => {
 						{isLoading ? <Loader className='w-6 h-6 animate-spin  mx-auto' /> : "Login"}
 					</motion.button>
 				</form>
+				{showResend && (
+					<div className="mt-4 text-center">
+						<p className="text-sm text-gray-400 mb-2">
+							Didn't receive a verification email?
+						</p>
+						<button
+							onClick={handleResendVerification}
+							className="text-green-400 hover:underline"
+							disabled={isLoading}
+						>
+							Resend Verification Email
+						</button>
+					</div>
+				)}
 			</div>
 			<div className='px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center'>
 				<p className='text-sm text-gray-400'>
 					Don't have an account?{" "}
-					<Link to='/signup' className='text-green-400 hover:underline'>
+					<Link to='/signup' onClick={clearError} className='text-green-400 hover:underline'>
 						Sign up
 					</Link>
 				</p>

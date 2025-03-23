@@ -13,7 +13,7 @@ const SignUpPage = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const { signup, error, isLoading } = useAuthStore();
+    const { signup, error, isLoading, clearError } = useAuthStore();
 
     const handleSignup = async (e) => {
         e.preventDefault();
@@ -76,7 +76,7 @@ const SignUpPage = () => {
             <div className="px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center">
                 <p className="text-sm text-gray-400">
                     Already have an account?{" "}
-                    <Link to={'/login'} className="text-green-400 hover:underline">
+                    <Link to={'/login'} onClick={clearError}className="text-green-400 hover:underline">
                         Login
                     </Link>
                 </p>
